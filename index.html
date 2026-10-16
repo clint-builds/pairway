@@ -34,6 +34,8 @@
   --font-sans: "Barlow Condensed", "DIN Condensed", "Arial Narrow", sans-serif;
 
   --text-display: 400 44px/1.05 var(--font-serif);
+  --text-display-l: 400 clamp(52px, 14vw, 72px)/1 var(--font-serif);   /* screen titles */
+  --text-display-xl: 400 clamp(54px, 15vw, 96px)/.95 var(--font-serif); /* section titles */
   --text-title: 400 28px/1.15 var(--font-serif);
   --text-heading: 600 20px/1.25 var(--font-serif);
   --text-body: 400 16px/1.55 var(--font-serif);
@@ -1326,6 +1328,22 @@ h2 em,.lede em{color:var(--accent-text)}
   :is(.btn,.rd-btn,.rd-key,.rd-slot,.rd-opt,.rd-seg button,.chip,.rd-chip,.stepper button,.theme-btn,.rd-nav,.rd-par-btn,.redeal,.rd-add,.tier-opt,.rd-sugg button,.who-btn,.game label):is(:active,.is-pressed,:hover){transform:none}
   .rd-seg-thumb{transition:none}
 }
+
+/* ===== Dominant headings ===== */
+.hero h1{font:400 clamp(56px,15vw,120px)/.98 var(--font-serif);letter-spacing:-.03em;margin:0 0 18px}
+.hero h1 .hl{display:inline-block;white-space:nowrap}
+.hero{padding-left:16px;padding-right:16px}
+h2{font:var(--text-display-xl);letter-spacing:-.025em}
+.lede{margin-top:14px}
+.rd-title{font:var(--text-display-l);letter-spacing:-.025em}
+.rd-holeno{font:400 clamp(104px,30vw,140px)/.82 var(--font-serif);letter-spacing:-.04em}
+@media (max-width:360px){.rd-holeno{font-size:96px}}
+.rd-h{font:400 34px/1.1 var(--font-serif);letter-spacing:-.015em}
+.group h3,.rd-cta h3{font:400 36px/1.05 var(--font-serif);letter-spacing:-.015em}
+.sheet h3{font:400 36px/1.05 var(--font-serif)}
+.rule-head h3,.rd-win .w{font:var(--text-display-l);letter-spacing:-.025em}
+.sc-ov-head h2{font:var(--text-display-l)}
+@media (max-width:360px){.count{padding:12px 12px 12px 14px;gap:8px}.count>div:first-child{min-width:0}.stepper{gap:6px}.stepper button{width:44px;height:44px}.stepper output{font-size:38px;min-width:1.4ch}}
 </style>
 </head>
 <body>
@@ -1343,7 +1361,7 @@ h2 em,.lede em{color:var(--accent-text)}
 
 <header class="hero" id="top">
   <p class="hero-k" id="heroDate"></p>
-  <h1 aria-label="Split the carts fairly"><span class="w"><span style="--i:0">Split</span></span> <span class="w"><span style="--i:1">the</span></span><br><span class="w"><span style="--i:2">carts</span></span><br><span class="w"><span style="--i:3"><em>fairly.</em></span></span></h1>
+  <h1 aria-label="Split the carts fairly" id="heroTitle"><span class="hl" id="heroLine1"><span class="w"><span style="--i:0">Split</span></span> <span class="w"><span style="--i:1">the</span></span> <span class="w"><span style="--i:2">carts</span></span></span><br><span class="w"><span style="--i:3"><em>fairly.</em></span></span></h1>
   <p>Pick the game, rank your crew, and Pairway pairs everyone so your round is an even match.</p>
   <div class="cta-row"><a class="btn btn-gold" href="#game">Set up the round</a><button class="btn btn-ghost" type="button" id="heroScoreBtn">Score a round</button></div>
   <div class="course" aria-hidden="true">
@@ -3045,6 +3063,20 @@ h2 em,.lede em{color:var(--accent-text)}
     const d = new Date();
     $('#heroDate').textContent = `${d.toLocaleDateString('en-AU', { weekday: 'long' })} \u00b7 ${d.getDate()} ${d.toLocaleDateString('en-AU', { month: 'short' })}`;
   })();
+
+  // Hero title: "Split the carts" fills the column on one line; "fairly." sits below at the same size.
+  function fitHero() {
+    const h = $('#heroTitle'), l = $('#heroLine1'); if (!h || !l) return;
+    h.style.fontSize = '100px';
+    const avail = h.parentElement.clientWidth - parseFloat(getComputedStyle(h.parentElement).paddingLeft) - parseFloat(getComputedStyle(h.parentElement).paddingRight);
+    const size = Math.max(40, Math.min(132, Math.floor(100 * avail / l.scrollWidth * 0.98)));
+    h.style.fontSize = size + 'px';
+  }
+  fitHero();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHero);
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', fitHero);
+  if (window.ResizeObserver) new ResizeObserver(() => fitHero()).observe($('#heroLine1'));
+  let fitT; addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(fitHero, 120); }, { passive: true });
 
   // ---------- Boot ----------
   load();
