@@ -1223,6 +1223,109 @@ h2 em,.lede em{color:var(--accent-text)}
 .rd-flag .rd-link{color:var(--ink)}
 .rd-flag-form input{background:var(--surface);border:var(--border);border-radius:var(--radius-md)}
 @media (max-width:360px){.rd-holeno{font-size:76px}.rd-holename{font-size:19px}}
+
+/* ===== Motion layer ===== */
+/* Timing bands: press 100ms, micro 220ms, spatial 380ms. Springs are Motion's duration-based
+   springs sampled into linear(): snappy = visualDuration .2 / bounce .15 (settles ~350ms),
+   soft = visualDuration .5 / bounce .25 (settles ~800ms). Older browsers get ease-out instead. */
+:root{
+  --dur-press:100ms; --dur-micro:220ms; --dur-move:380ms;
+  --ease-in:cubic-bezier(.4,0,1,1); --ease-io:cubic-bezier(.65,0,.35,1); --ease-back:cubic-bezier(.34,1.56,.64,1);
+  --spring:cubic-bezier(.22,1,.36,1); --spring-dur:350ms;
+  --spring-soft:cubic-bezier(.22,1,.36,1); --spring-soft-dur:560ms;
+}
+@supports (transition-timing-function: linear(0, 1)){
+  :root{
+    --spring:linear(0, 0.0341, 0.1138, 0.2118, 0.3235, 0.4289, 0.5325, 0.6212, 0.7024, 0.768, 0.8252, 0.8694, 0.9064, 0.934, 0.9561, 0.9719, 0.984, 0.9922, 0.9981, 1.0017, 1.004, 1.0052, 1.0056, 1.0056, 1.0052, 1.0047, 1.0041, 1.0035, 1.0029, 1.0024, 1.0019, 1.0015, 1.0011, 1.0008, 1);
+    --spring-soft:linear(0, 0.0274, 0.0954, 0.1881, 0.2932, 0.4014, 0.5064, 0.6038, 0.6911, 0.767, 0.8311, 0.8839, 0.9263, 0.9592, 0.984, 1.002, 1.0142, 1.022, 1.0262, 1.0278, 1.0275, 1.0259, 1.0235, 1.0207, 1.0177, 1.0147, 1.0119, 1.0094, 1.0071, 1.0052, 1.0037, 1.0024, 1.0014, 1.0006, 1);
+    --spring-soft-dur:800ms;
+  }
+}
+
+/* Press: everything tappable dips fast (ease-out, 100ms) and springs back on release.
+   .is-pressed gives keyboard users the same dip on Enter/Space. */
+:is(.btn,.rd-btn,.rd-key,.rd-slot,.rd-opt,.rd-seg button,.chip,.rd-chip,.stepper button,.theme-btn,.rd-nav,.rd-par-btn,.redeal,.rd-add,.tier-opt,.rd-sugg button,.who-btn,.g-info,.rd-x,.row .del,.rule-x){
+  transition:transform var(--spring-dur) var(--spring),background-color var(--dur-micro) var(--ease-out),border-color var(--dur-micro) var(--ease-out),color var(--dur-micro) var(--ease-out),box-shadow var(--dur-micro) var(--ease-out),opacity var(--dur-micro) var(--ease-out);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.game label{transition:transform var(--spring-dur) var(--spring),background-color var(--dur-micro) var(--ease-out),border-color var(--dur-micro) var(--ease-out),color var(--dur-micro) var(--ease-out)}
+@media (hover:hover) and (pointer:fine){
+  :is(.btn,.rd-btn):hover{transform:translateY(-1px)}
+  :is(.rd-opt,.rd-slot,.game label,.rd-key,.rd-nav,.theme-btn,.rd-par-btn):hover{border-color:var(--line-strong)}
+  .rd-key:hover{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+}
+:is(.btn,.rd-btn,.rd-opt,.rd-seg button,.chip,.rd-chip,.tier-opt,.rd-sugg button,.who-btn,.rd-add,.redeal):is(:active,.is-pressed){transform:scale(.96);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+:is(.rd-key,.stepper button,.theme-btn,.rd-nav,.rd-par-btn,.g-info,.rd-x,.row .del,.rule-x):is(:active,.is-pressed){transform:scale(.92);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+.rd-slot:is(:active,.is-pressed),.game label:active{transform:scale(.97);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+.rd-card tbody tr.rd-row{transition:background-color var(--dur-micro) var(--ease-out)}
+
+/* Segmented control: a thumb slides between options instead of the fill jumping */
+.rd-seg{position:relative;isolation:isolate}
+.rd-seg-thumb{position:absolute;top:4px;bottom:4px;left:0;border-radius:var(--radius-pill);background:var(--inverse);z-index:-1;pointer-events:none;transition:transform var(--spring-dur) var(--spring)}
+.rd-seg.has-thumb button[aria-checked="true"]{background:transparent}
+
+/* Selection marks: the tick on a chosen option springs in */
+.rd-opt[aria-checked="true"]::before{animation:rdPopIn var(--spring-dur) var(--spring)}
+.rd-opt[aria-checked="true"]::after{animation:rdTick 260ms var(--ease-out) both}
+@keyframes rdPopIn{from{transform:scale(.4);opacity:0}}
+@keyframes rdTick{from{opacity:0;transform:rotate(45deg) scale(.5)}}
+
+/* Hole screen: the score you just entered pops in, the pointer follows the next player */
+.rd-mk.pop{animation:rdMkPop var(--spring-dur) var(--spring)}
+@keyframes rdMkPop{from{transform:scale(.5);opacity:.2}}
+.rd-slot[aria-checked="true"]::after{animation:rdPtr var(--dur-micro) var(--ease-out)}
+@keyframes rdPtr{from{opacity:0;transform:translate(-50%,-8px) rotate(45deg)}}
+.rd-btn.ready{animation:rdReady 420ms var(--ease-io)}
+@keyframes rdReady{40%{transform:scale(1.035)}}
+
+/* Scorecard: the row you just scored glows briefly; standings tick when they change */
+.rd-card tbody tr.flash{animation:rdFlash 1100ms var(--ease-out)}
+@keyframes rdFlash{0%,25%{background:var(--brass-tint)}}
+.rd-st .tp.tick{animation:rdTickUp 260ms var(--ease-out)}
+@keyframes rdTickUp{from{transform:translateY(.35em);opacity:0}}
+
+/* Views slide in from the side you're heading towards */
+.rd-view.enter{animation:rdIn var(--dur-move) var(--ease-out)}
+.rd-view.enter.fwd{animation-name:rdInFwd}
+.rd-view.enter.back{animation-name:rdInBack}
+@keyframes rdInFwd{from{opacity:0;transform:translateX(22px)}}
+@keyframes rdInBack{from{opacity:0;transform:translateX(-22px)}}
+
+/* Course: suggestions drop in, the chosen course settles in */
+.rd-sugg:not([hidden]){animation:rdDrop var(--dur-micro) var(--ease-out);transform-origin:top center}
+@keyframes rdDrop{from{opacity:0;transform:translateY(-6px) scale(.985)}}
+.rd-course.in{animation:rdCardIn var(--spring-soft-dur) var(--spring-soft)}
+@keyframes rdCardIn{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.rd-par[open] .rd-par-in{animation:rdDrop var(--dur-micro) var(--ease-out)}
+
+/* Results: winner card settles, rows follow in a tight 50ms stagger */
+#rdTally:not([hidden]) .rd-win{animation:rdCardIn var(--spring-soft-dur) var(--spring-soft) 60ms both}
+#rdTally:not([hidden]) .rd-rank li{animation:rdRowIn 320ms var(--ease-out) both;animation-delay:calc(var(--i,0) * 50ms + 160ms)}
+@keyframes rdRowIn{from{opacity:0;transform:translateY(8px)}}
+
+/* Toast: springs in, eases out quickly (exits shouldn't demand attention) */
+.toast{transition:opacity 160ms var(--ease-in),transform 160ms var(--ease-in)}
+.toast.show{transition:opacity 200ms var(--ease-out),transform var(--spring-soft-dur) var(--spring-soft)}
+
+/* Theme switch: icon turns in; the page change is a circular reveal from the button (JS) */
+.theme-btn svg{animation:rdIcon 420ms var(--spring)}
+@keyframes rdIcon{from{opacity:0;transform:rotate(-70deg) scale(.6)}}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){z-index:2}
+
+/* Header and dock settle rather than snap */
+.topbar-inner{transition:height var(--dur-move) var(--ease-out),border-color var(--dur-micro) var(--ease-out),background-color var(--dur-micro) var(--ease-out)}
+.dock{transition:transform var(--dur-move) var(--ease-out)}
+.switch::after{transition:transform var(--spring-dur) var(--spring),width var(--dur-press) var(--ease-out),background-color var(--dur-micro)}
+
+/* Reduced motion: no movement, just quick fades or instant state */
+@media (prefers-reduced-motion: reduce){
+  .rd-view.enter,.rd-view.enter.fwd,.rd-view.enter.back{animation:rdFade 120ms linear}
+  @keyframes rdFade{from{opacity:0}}
+  .rd-mk.pop,.rd-btn.ready,.rd-st .tp.tick,.rd-sugg:not([hidden]),.rd-course.in,#rdTally:not([hidden]) .rd-win,#rdTally:not([hidden]) .rd-rank li,.theme-btn svg,.rd-opt[aria-checked="true"]::before,.rd-opt[aria-checked="true"]::after,.rd-slot[aria-checked="true"]::after{animation:none}
+  .rd-card tbody tr.flash{animation:rdFlash 1100ms linear}
+  :is(.btn,.rd-btn,.rd-key,.rd-slot,.rd-opt,.rd-seg button,.chip,.rd-chip,.stepper button,.theme-btn,.rd-nav,.rd-par-btn,.redeal,.rd-add,.tier-opt,.rd-sugg button,.who-btn,.game label):is(:active,.is-pressed,:hover){transform:none}
+  .rd-seg-thumb{transition:none}
+}
 </style>
 </head>
 <body>
@@ -2444,14 +2547,20 @@ h2 em,.lede em{color:var(--accent-text)}
   // ---- open / close / views ----
   let rdReturn = null;
   function rdMeasure() { const h = $('.rd-view:not([hidden]) .rd-head', rdPanel); if (h) rdPanel.style.setProperty('--hh', h.offsetHeight + 'px'); }
+  const RD_DEPTH = { setup: 0, card: 1, hole: 2, tally: 2 };
+  let rdPrevView = null;
   function rdShow(view, focus = true) {
     const ids = { setup: 'rdSetup', card: 'rdCard', hole: 'rdHole', tally: 'rdTally' };
-    Object.entries(ids).forEach(([k, id]) => { const v = $('#' + id); v.hidden = k !== view; v.classList.toggle('enter', k === view && !reduced); });
+    const from = rdEl.hidden ? null : rdPrevView, dir = from == null ? '' : RD_DEPTH[view] > RD_DEPTH[from] ? 'fwd' : RD_DEPTH[view] < RD_DEPTH[from] ? 'back' : '';
+    Object.entries(ids).forEach(([k, id]) => { const v = $('#' + id); v.hidden = k !== view; v.classList.remove('enter', 'fwd', 'back'); if (k === view && from !== view) { void v.offsetWidth; v.classList.add('enter'); if (dir) v.classList.add(dir); } });
+    rdCameFrom = from; rdPrevView = view;
     if (view !== 'setup') { RD.view = view; rdSave(); }
     ({ setup: rdRenderSetup, card: rdRenderCard, hole: rdRenderHole, tally: rdRenderTally })[view]();
     rdEl.scrollTop = 0; rdMeasure();
     if (focus) { const t = $('#' + ids[view] + ' .rd-title'); if (t) t.focus({ preventScroll: true }); }
+    if (view === 'card' && rdCameFrom === 'hole') rdFlashRow();
   }
+  let rdCameFrom = null;
   function rdOpen(view) {
     rdReturn = document.activeElement;
     rdEl.hidden = false; document.documentElement.classList.add('rd-lock');
@@ -2593,6 +2702,7 @@ h2 em,.lede em{color:var(--accent-text)}
       const meta = [c && c.region, `Par ${rdParTotal(D.par)}`, tees.length > 1 ? `${tees[D.teeIdx].tee_name} tees` : null].filter(Boolean).join(' · ');
       box.innerHTML = `<div class="rd-course"><div><b>${esc(D.course)}</b><span>${esc(meta)}</span></div><button type="button" class="rd-link u" id="rdCourseChange">Change</button></div>` + rdFlagHTML(c) +
         (tees.length > 1 ? `<div class="rd-tees"><p class="rd-sub-h" id="rdTeeH" style="margin-top:14px">Tees</p><div class="rd-seg" role="radiogroup" aria-labelledby="rdTeeH">${tees.map((t, i) => `<button type="button" role="radio" aria-checked="${i === D.teeIdx}" data-tee="${i}">${esc(t.tee_name || 'Tee ' + (i + 1))}</button>`).join('')}</div></div>` : '');
+      rdSegThumb($('.rd-seg', box), 'tee');
       return;
     }
     box.innerHTML = `<div class="rd-field">${RD_SEARCH}<input type="search" id="rdQ" placeholder="Search courses, e.g. Moore Park" autocomplete="off" autocapitalize="words" enterkeyhint="search" aria-label="Search courses" aria-controls="rdSugg" aria-describedby="rdQMsg"></div><div class="rd-sugg" id="rdSugg" hidden></div><p class="rd-msg" id="rdQMsg" aria-live="polite">${LOCAL_COURSES.length} NSW courses built in.</p>`;
@@ -2622,7 +2732,7 @@ h2 em,.lede em{color:var(--accent-text)}
     const pick = e.target.closest('[data-course]'), use = e.target.closest('[data-use]'), tee = e.target.closest('[data-tee]');
     if (pick) {
       const i = +pick.dataset.course; D.courseIdx = i; D.teeIdx = 0; D.course = LOCAL_COURSES[i].name; rdApplyTee(); buzz([8, 30, 8]);
-      rdRenderCourse(); rdRenderPar(); announce(`${D.course} loaded, par ${rdParTotal(D.par)}.`); $('#rdCourseChange').focus();
+      rdSegLast.tee = null; rdRenderCourse(); rdRenderPar(); $('.rd-course').classList.add('in'); announce(`${D.course} loaded, par ${rdParTotal(D.par)}.`); $('#rdCourseChange').focus();
     } else if (use) {
       D.course = $('#rdQ').value.trim().slice(0, 40); D.courseIdx = null; buzz(8);
       rdRenderCourse(); rdRenderPar(); $('#rdPar').open = true; $('#rdCourseChange').focus();
@@ -2682,12 +2792,27 @@ h2 em,.lede em{color:var(--accent-text)}
     $(`.rd-par-btn[data-i="${i}"]`).focus();
   });
 
+
+  // Segmented controls: a thumb slides from the old option to the new one.
+  const rdSegLast = {};
+  function rdSegThumb(seg, key) {
+    if (!seg) return;
+    const btns = $$('button', seg), i = btns.findIndex(b => b.getAttribute('aria-checked') === 'true'); if (i < 0) return;
+    const th = document.createElement('span'); th.className = 'rd-seg-thumb'; th.setAttribute('aria-hidden', 'true'); seg.prepend(th); seg.classList.add('has-thumb');
+    const at = k => btns[k].offsetLeft, w = btns[i].offsetWidth;
+    th.style.width = w + 'px';
+    const prev = rdSegLast[key]; rdSegLast[key] = i;
+    if (reduced || prev == null || prev === i || !btns[prev]) { th.style.transform = `translateX(${at(i)}px)`; return; }
+    th.style.transition = 'none'; th.style.transform = `translateX(${at(prev)}px)`; void th.offsetWidth;
+    th.style.transition = ''; th.style.transform = `translateX(${at(i)}px)`;
+  }
   function rdRenderTrack() {
     const units = rdTeamUnits(D), solo = D.track === 'solo';
     const sharedOnly = units.length && units.every(u => u.entry === 'shared');
     const scope = D.origin === 'draw' && D.draw ? (D.draw.groups.length > 1 ? `Group ${D.groupIdx + 1}` : 'your group') : 'the group';
     const opts = [['group', 'Everyone', `You enter every score for ${scope}.`], ['solo', sharedOnly ? 'Just my team' : 'Just me', sharedOnly ? 'Only your team’s card.' : 'Only your own card.']];
     $('#rdTrack').innerHTML = `<div class="rd-seg">${opts.map(([k, l]) => `<button type="button" role="radio" aria-checked="${(k === 'solo') === solo}" data-track="${k}">${esc(l)}</button>`).join('')}</div><p class="rd-seg-note">${esc(opts[solo ? 1 : 0][2])}</p>`;
+    rdSegThumb($('#rdTrack .rd-seg'), 'track');
     const people = rdPeople(D);
     $('#rdMeWrap').hidden = !solo || people.length < 2;
     if (solo && people.length) {
@@ -2738,6 +2863,13 @@ h2 em,.lede em{color:var(--accent-text)}
     }).join('');
     return `<tr class="sub ${cls}"><th scope="row">${label}</th><td class="par">${par}</td>${cells}</tr>`;
   }
+  let rdStandPrev = {};
+  function rdFlashRow() {
+    if (rdLastHole == null) return;
+    const row = $(`#rdTable tr.rd-row[data-h="${rdLastHole}"]`); if (!row) return;
+    row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
+    const r = row.getBoundingClientRect(); if (r.top < 120 || r.bottom > innerHeight - 100) row.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+  }
   function rdRenderCard() {
     $('#rdCardK').textContent = [RD.course || 'Your round', RD_GAMES[rdGameOf(RD.setup)].label].join(' · ');
     // standings, in a fixed order so nobody's tile jumps around
@@ -2745,7 +2877,9 @@ h2 em,.lede em{color:var(--accent-text)}
     const best = Math.min(...st.filter(x => x.thru).map(x => x.toPar));
     const leaders = st.filter(x => x.thru && x.toPar === best);
     $('#rdStand').style.setProperty('--n', Math.min(st.length, 4));
+    const rdStandWas = rdStandPrev; rdStandPrev = {};
     $('#rdStand').innerHTML = st.map(x => `<div class="rd-st${st.length > 1 && leaders.length === 1 && leaders[0] === x ? ' lead' : ''}"><span class="nm">${esc(x.u.label)}</span><span class="tp" aria-label="${x.thru ? rdToParWords(x.toPar) : 'no score yet'}">${x.thru ? rdToPar(x.toPar) : '–'}</span><span class="th">${x.thru === 18 ? `${x.total} strokes` : x.thru ? `Thru ${x.thru}` : 'Not started'}</span></div>`).join('');
+    $$('.rd-st', $('#rdStand')).forEach((el, k) => { const id = st[k].u.id, txt = $('.tp', el).textContent; rdStandPrev[id] = txt; if (!reduced && rdStandWas[id] != null && rdStandWas[id] !== txt) $('.tp', el).classList.add('tick'); });
     // the card: holes down, players across
     const slots = RD.slots, next = rdNextHole();
     const hasTeams = RD.units.some(u => u.entry === 'bestball');
@@ -2806,9 +2940,11 @@ h2 em,.lede em{color:var(--accent-text)}
     go.className = 'rd-btn ' + (done ? 'rd-btn-primary' : 'rd-btn-quiet');
     go.innerHTML = h === 17 ? 'Back to the scorecard' : `${done ? 'Next' : 'Skip to'}: hole ${h + 2} ${RD_NEXT}`;
   }
+  let rdLastHole = null;
   function rdKey(v) {
     const h = RD.hole, s = RD.slots.find(x => x.key === RD.sel); if (!s) return;
-    RD.scores[s.key][h] = Math.max(1, Math.min(20, v));
+    const wasDone = rdHoleDone(h);
+    RD.scores[s.key][h] = Math.max(1, Math.min(20, v)); rdLastHole = h;
     RD.finished = false;
     buzz(8);
     announce(`${s.label}, ${v}, ${rdRel(v, RD.par[h])}.`);
@@ -2817,7 +2953,11 @@ h2 em,.lede em{color:var(--accent-text)}
     const nxt = order.find(x => rdScore(x.key, h) == null);
     if (nxt) RD.sel = nxt.key;
     rdSave(); rdRenderHole();
-    if (rdHoleDone(h)) $('#rdHoleGo').focus({ preventScroll: true });
+    const mk = $(`#rdSlots [data-slot="${CSS.escape(s.key)}"] .rd-mk`); if (mk && !reduced) mk.classList.add('pop');
+    if (rdHoleDone(h)) {
+      const go = $('#rdHoleGo'); go.focus({ preventScroll: true });
+      if (!wasDone && !reduced) { go.classList.remove('ready'); void go.offsetWidth; go.classList.add('ready'); }
+    }
   }
   $('#rdPad').addEventListener('click', e => {
     const b = e.target.closest('.rd-key'); if (!b || b.disabled) return;
@@ -2827,7 +2967,15 @@ h2 em,.lede em{color:var(--accent-text)}
     rdKey(+b.dataset.v);
   });
   $('#rdSlots').addEventListener('click', e => { const b = e.target.closest('[data-slot]'); if (!b) return; RD.sel = b.dataset.slot; buzz(6); rdRenderHole(); $(`[data-slot="${b.dataset.slot}"]`).focus({ preventScroll: true }); });
-  function rdGoHole(h) { RD.hole = h; RD.sel = null; rdSave(); rdShow('hole', false); $('#rdHoleT').focus({ preventScroll: true }); }
+  function rdGoHole(h) {
+    const dir = Math.sign(h - RD.hole) || 1;
+    RD.hole = h; RD.sel = null; rdSave(); rdShow('hole', false); $('#rdHoleT').focus({ preventScroll: true });
+    if (reduced) return;
+    const ease = 'cubic-bezier(.22,1,.36,1)';
+    $('#rdHoleT').animate([{ transform: `translateY(${dir * 45}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 320, easing: ease });
+    $('.rd-holemeta').animate([{ transform: `translateY(${dir * 8}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, delay: 40, easing: ease, fill: 'backwards' });
+    [$('#rdSlots'), $('#rdNote'), $('#rdPad')].forEach((el, k) => el && !el.hidden && el.animate([{ transform: `translateX(${dir * 20}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, delay: k * 30, easing: ease, fill: 'backwards' }));
+  }
   $('#rdPrev').addEventListener('click', () => { if (RD.hole > 0) rdGoHole(RD.hole - 1); });
   $('#rdNext').addEventListener('click', () => { if (RD.hole < 17) rdGoHole(RD.hole + 1); });
   $('#rdHoleGo').addEventListener('click', () => { if (RD.hole === 17) rdShow('card'); else rdGoHole(RD.hole + 1); });
@@ -2845,7 +2993,7 @@ h2 em,.lede em{color:var(--accent-text)}
       const kicker = !multi ? (allIn ? 'Round complete' : `After ${top.thru} holes`) : tied ? (allIn ? 'Tied for the win' : 'Tied for the lead') : (allIn ? 'Winner' : 'Leading');
       html += `<div class="rd-win"><p class="k">${kicker}</p><p class="w">${esc(multi ? names : top.u.label)}</p><p class="s">${top.total} strokes · ${rdToPar(top.toPar)}${top.thru < 18 ? ` thru ${top.thru}` : ''}</p></div>`;
     } else html += `<p class="rd-hint">No scores yet. Head back to the scorecard to start.</p>`;
-    html += `<ol class="rd-rank">${ranked.map((x, i) => `<li><span class="pos">${x.thru ? i + 1 : '–'}</span><span class="who"><b>${esc(x.u.label)}</b>${x.u.members.length > 1 ? `<span>${esc(x.u.members.map(m => m.name).join(' & '))}</span>` : ''}</span><span class="tot"><b>${x.total ?? '–'}</b><span>${x.thru ? rdToPar(x.toPar) + (x.thru < 18 ? ` · thru ${x.thru}` : '') : 'No score'}</span></span></li>`).join('')}</ol>`;
+    html += `<ol class="rd-rank">${ranked.map((x, i) => `<li style="--i:${i}"><span class="pos">${x.thru ? i + 1 : '–'}</span><span class="who"><b>${esc(x.u.label)}</b>${x.u.members.length > 1 ? `<span>${esc(x.u.members.map(m => m.name).join(' & '))}</span>` : ''}</span><span class="tot"><b>${x.total ?? '–'}</b><span>${x.thru ? rdToPar(x.toPar) + (x.thru < 18 ? ` · thru ${x.thru}` : '') : 'No score'}</span></span></li>`).join('')}</ol>`;
     html += `<p class="rd-msg" style="text-align:center;margin-top:16px">Course par ${parTot} · gross strokes, no handicaps.</p>`;
     $('#rdTallyBody').innerHTML = html;
   }
@@ -2875,10 +3023,24 @@ h2 em,.lede em{color:var(--accent-text)}
     $('#themeColor').content = t === 'light' ? '#FBF6EE' : '#162214';
   }
   applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
-  $('#themeBtn').addEventListener('click', () => {
+  $('#themeBtn').addEventListener('click', e => {
     const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-    applyTheme(t); try { localStorage.setItem(THEME_KEY, t); } catch (e) {} buzz(8);
+    const swap = () => applyTheme(t);
+    try { localStorage.setItem(THEME_KEY, t); } catch (err) {} buzz(8);
+    if (reduced || !document.startViewTransition) { swap(); return; }
+    const r = e.currentTarget.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const vt = document.startViewTransition(swap);
+    vt.ready.then(() => document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+      { duration: 520, easing: 'cubic-bezier(.65,0,.35,1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
   });
+
+  // Keyboard parity for press feedback: Enter/Space show the same dip a tap does.
+  const PRESSABLE = '.btn,.rd-btn,.rd-key,.rd-slot,.rd-opt,.rd-seg button,.chip,.rd-chip,.stepper button,.theme-btn,.rd-nav,.rd-par-btn,.redeal,.rd-add,.tier-opt,.rd-sugg button,.who-btn';
+  const unpress = () => $$('.is-pressed').forEach(x => x.classList.remove('is-pressed'));
+  document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat && e.target.closest) { const el = e.target.closest(PRESSABLE); if (el) { el.classList.add('is-pressed'); setTimeout(unpress, 160); } } });
+  document.addEventListener('keyup', unpress); addEventListener('blur', unpress);
   (function heroDate() {
     const d = new Date();
     $('#heroDate').textContent = `${d.toLocaleDateString('en-AU', { weekday: 'long' })} \u00b7 ${d.getDate()} ${d.toLocaleDateString('en-AU', { month: 'short' })}`;
