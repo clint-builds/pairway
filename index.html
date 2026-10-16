@@ -6,13 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pairway: fair golf cart pairings</title>
 <meta name="description" content="Pick the game, rank your crew, and Pairway pairs everyone so your round is an even match.">
-<meta name="theme-color" content="#162214" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#FBF6EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#162214" id="themeColor">
+<script>try{if(localStorage.getItem('pairway:theme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ===== Golf design system tokens (from Claude Design tokens.css). Dark is the default; phones set to light get light. ===== */
+/* ===== Golf design system tokens (from Claude Design tokens.css). Dark is the default; light only when the player switches. ===== */
 :root {
   color-scheme: dark;
   --bg: #162214;
@@ -57,15 +57,6 @@
   --brass: #8A6A2E; --brass-tint: #F1E2C6; --on-brass-tint: #5E4719;
   --inverse: #162214; --on-inverse: #FBF6EE; --edge: #958C7A;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-    --bg: #FBF6EE; --surface: #FFFDF9; --line: #E8DFD0; --ink: #162214; --muted: #5C6655;
-    --accent: #E07A4F; --on-accent: #162214; --accent-text: #B9552C;
-    --brass: #8A6A2E; --brass-tint: #F1E2C6; --on-brass-tint: #5E4719;
-    --inverse: #162214; --on-inverse: #FBF6EE; --edge: #958C7A;
-  }
-}
 /* Older component names, pointed at the system so every screen follows it */
 :root {
   --paper: var(--bg); --panel: var(--surface); --card: var(--bg); --plain: var(--surface);
@@ -88,6 +79,7 @@
   --blow: var(--brass); --on-blow: var(--on-inverse); --blow-ink: var(--accent-text);
 }
 
+*,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:104px}
 body{margin:0;background:var(--paper) var(--topo) 0 0/720px 720px repeat;color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img,svg{max-width:100%;display:block}
@@ -987,6 +979,250 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
 .rd-rank .who span{font:var(--text-small)}
 .rd-rank .tot b{font:var(--text-number);font-size:32px}
 .rd-rank .tot span{font:var(--text-label);letter-spacing:.08em}
+
+/* ===== Component layer v2: matches the design-system mockups (content on the page, cards only for groups) ===== */
+html{scroll-padding-top:84px}
+em{font-style:italic}
+/* header: plain bar, logo centred, theme switch on the right */
+.topbar{padding:0;transform:none}
+.topbar-inner{max-width:none;height:calc(64px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;border-radius:0;background:var(--bg);border:0;border-bottom:1px solid transparent;box-shadow:none;position:relative;transition:border-color .3s,background-color .3s}
+.topbar.compact .topbar-inner{height:calc(56px + env(safe-area-inset-top));max-width:none;border-radius:0;box-shadow:none;border-bottom-color:var(--line)}
+.topbar .logo,.topbar.compact .logo{height:36px}
+.theme-btn{position:absolute;right:12px;bottom:10px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:border-color .2s}
+.topbar.compact .theme-btn{bottom:6px}
+.theme-btn svg{width:20px;height:20px}
+.theme-btn .sun{display:none}
+[data-theme="light"] .theme-btn .sun{display:block}
+[data-theme="light"] .theme-btn .moon{display:none}
+@media (hover:hover) and (pointer:fine){.theme-btn:hover{border-color:var(--line-strong)}}
+
+/* hero: like the mockup greeting */
+.hero{background:transparent;border:0;min-height:0;padding:calc(env(safe-area-inset-top) + 104px) 20px 8px;max-width:620px;border-radius:0}
+@media (min-width:640px){.hero{border:0;margin-top:0}}
+.hero .course{display:none}
+.hero .hero-k{margin:0 0 10px;font:var(--text-label);font-size:13px;text-transform:uppercase;letter-spacing:var(--tracking-caps);color:var(--brass)}
+.hero h1{font:400 clamp(44px,12.5vw,56px)/1.05 var(--font-serif);letter-spacing:var(--tracking-display);margin:0 0 14px}
+.hero h1 em{color:var(--accent-text)}
+.hero p{font:italic 400 18px/1.5 var(--font-serif);color:var(--muted);margin:0 0 26px;max-width:22em}
+.hero .cta-row{gap:10px}
+.hero .cta-row .btn{flex:1 1 220px}
+
+/* page column: content sits on the page colour */
+main{background:transparent;border:0;border-radius:0;box-shadow:none;margin-top:0}
+@media (min-width:640px){main{border:0}}
+.kicker{color:var(--brass);font-size:13px}
+.kicker .dot{display:none}
+h2 em,.lede em{color:var(--accent-text)}
+.lede{font:italic 400 18px/1.5 var(--font-serif)}
+.section{padding-top:56px}
+
+/* buttons */
+.btn{min-height:52px}
+.btn-ghost{border:1px solid var(--ink);background:transparent;color:var(--ink)}
+.btn-green{background:var(--inverse);color:var(--on-inverse)}
+
+/* cards */
+.game label,.count,.toggle-card,details.guide,.group,.balance,.pour-card,.rule-meta div{background:var(--surface);border:var(--border);border-radius:var(--radius-lg);box-shadow:none}
+.game label{min-height:124px}
+.game input:checked + label{background:var(--inverse);border-color:var(--inverse);color:var(--on-inverse)}
+.count{padding:16px 16px 16px 20px}
+.count .c-label{font:var(--text-label);font-size:13px;text-transform:uppercase;letter-spacing:var(--tracking-caps);color:var(--muted)}
+.count .c-meta{font:italic 400 15px/1.4 var(--font-serif);margin-top:2px}
+.stepper{gap:10px}
+.stepper button{width:48px;height:48px;border:1px solid var(--line-strong);background:transparent}
+.stepper output{min-width:1.6ch}
+.toggle-card.on{background:var(--surface);border-color:var(--brass)}
+.toggle-card .t-label{font:var(--text-heading);font-size:18px}
+.switch{background:var(--line)}
+.switch:checked{background:var(--accent)}
+
+/* roster: list rows with hairlines, not boxes */
+.roster{gap:0;border-top:1px solid var(--line)}
+.row{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;height:68px;box-shadow:none}
+.row::before{display:none}
+.row.dragging{background:var(--surface);border-radius:var(--radius-md);box-shadow:0 18px 36px -18px rgba(0,0,0,.6)}
+.row .rank{font:500 24px/1 var(--font-sans);color:var(--muted)}
+.row input{font:400 20px/1.2 var(--font-serif);padding:10px 4px}
+.row input:focus{background:transparent;box-shadow:inset 0 -2px 0 var(--accent-text);border-radius:0}
+@media (hover:hover) and (pointer:fine){.row:hover{background:color-mix(in srgb,var(--surface) 60%,transparent)}}
+/* chips: the three system chips, plus an outline for the fourth tier */
+.chip{min-height:34px;padding:7px 13px;border-radius:var(--radius-pill);font:var(--text-label);font-size:13px;letter-spacing:.12em}
+.chip svg{width:9px;height:9px}
+.t-scratch{background:var(--inverse);color:var(--on-inverse);box-shadow:none}
+.t-great{background:var(--brass-tint);color:var(--on-brass-tint);box-shadow:none}
+.t-good{background:transparent;color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
+.t-hacker{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.roster-foot .btn{min-height:48px}
+
+/* bottom bar */
+.dock{padding:0}
+.dock-inner{max-width:none;border-radius:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom)) 20px;background:color-mix(in srgb,var(--bg) 94%,transparent);color:var(--ink);border-top:1px solid var(--line);box-shadow:none}
+.dock-meta{color:var(--muted)}
+.dock-meta b{color:var(--ink)}
+.dock .btn{min-height:52px}
+
+/* the draw */
+.balance{background:transparent;border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:18px 0;gap:20px}
+.balance .pct{font:var(--text-number-xl);padding-right:20px;border-right:1px solid var(--line)}
+.balance .bar{height:4px;border:0;background:var(--line)}
+.balance .bar i{background:var(--accent)}
+.balance .b-note{font:var(--text-label);font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-top:10px;line-height:1.5}
+.group{padding:20px 14px 22px}
+.group h3{font:var(--text-title)}
+.group .g-tag{background:var(--brass-tint);color:var(--on-brass-tint)}
+.cart .team{color:var(--brass)}
+.cart .who{font:400 18px/1.3 var(--font-serif)}
+.cart .who small{font:var(--text-label);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-top:2px}
+.vs{font:italic 400 22px/1 var(--font-serif)}
+.pour{border-top:1px solid var(--line)}
+.pour-card{border-radius:var(--radius-md)}
+.redeal{border-color:var(--line-strong)}
+.house{font-size:16px}
+/* hand-off card, styled like "Next tee time" */
+.rd-cta{background:var(--surface);border:var(--border);border-radius:var(--radius-lg);padding:22px 20px 20px}
+.rd-cta .k{color:var(--muted)}
+.rd-cta h3{font:var(--text-title);margin:8px 0 6px}
+.rd-cta p{font:italic 400 16px/1.5 var(--font-serif);color:var(--muted);margin:0 0 18px}
+
+/* sheets and dialogs */
+.sheet{background:var(--bg);border-top:var(--border)}
+.tier-opts{gap:0;border-top:1px solid var(--line)}
+.tier-opt{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:16px 4px}
+.tier-opt[aria-checked="true"]{background:transparent;box-shadow:inset 3px 0 0 var(--accent);padding-left:12px}
+.rule-card{background:var(--bg);border:var(--border)}
+.rule-head{background:transparent;color:var(--ink);padding-bottom:6px}
+.rule-kicker{color:var(--brass)}
+.rule-x{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.rule-meta div{border-radius:var(--radius-md)}
+.loader .lw{font:italic 400 22px var(--font-serif)}
+
+/* ===== Score a round ===== */
+.rd{background:var(--bg)}
+.rd-panel{background:var(--bg);border:0;border-radius:0;max-width:560px;width:100%;margin:0 auto;min-height:100dvh}
+@media (min-width:600px){.rd-panel{margin:0 auto;border-radius:0;min-height:100dvh}.rd-foot{border-radius:0}}
+.rd-head{background:var(--bg);border-radius:0;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 8px) 20px 16px}
+.rd-body{padding:22px 20px 32px}
+.rd-foot{background:color-mix(in srgb,var(--bg) 94%,transparent);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.rd-link{color:var(--muted)}
+.rd-link svg{width:16px;height:16px}
+.rd-kicker{color:var(--brass);font-size:13px;margin-top:10px}
+.rd-badge{display:inline-flex;align-items:center;min-height:32px;padding:0 14px;border-radius:var(--radius-pill);box-shadow:inset 0 0 0 1px var(--brass);color:var(--brass);font:var(--text-label);font-size:13px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+.rd-badge:empty{display:none}
+.rd-btn-quiet{background:transparent;border:1px solid var(--ink);color:var(--ink)}
+/* setup steps */
+.rd-step{margin-bottom:36px}
+.rd-h{display:block;font:var(--text-title);margin:0 0 6px}
+.rd-n{display:block;width:auto;height:auto;background:none;color:var(--brass);font:var(--text-label);font-size:13px;letter-spacing:var(--tracking-caps);text-transform:uppercase;margin-bottom:6px;place-items:initial}
+.rd-hint{font:italic 400 16px/1.5 var(--font-serif)}
+.rd-sub-h{color:var(--muted)}
+.rd-player{background:var(--surface);border:var(--border);border-radius:var(--radius-md)}
+.rd-player:focus-within{border-color:var(--accent-text);box-shadow:none}
+.rd-player input{font:400 19px/1.2 var(--font-serif)}
+.rd-tier select{background:var(--brass-tint);color:var(--on-brass-tint);border-radius:var(--radius-pill);min-height:36px;font-size:13px}
+.rd-tier::after{border-color:var(--on-brass-tint)}
+.rd-add{border:1px dashed var(--line-strong);border-radius:var(--radius-pill);min-height:52px}
+.rd-opt{background:var(--surface);border:var(--border);border-radius:var(--radius-lg)}
+.rd-opt span{font:italic 400 14px/1.4 var(--font-serif)}
+.rd-opt[aria-checked="true"]{background:var(--inverse);border-color:var(--inverse);box-shadow:none;color:var(--on-inverse)}
+.rd-opt[aria-checked="true"] span{color:color-mix(in srgb,var(--on-inverse) 72%,var(--inverse))}
+.rd-opt::before{border-color:var(--line-strong)}
+.rd-opt[aria-checked="true"]::before{background:var(--on-inverse);border-color:var(--on-inverse)}
+.rd-opt[aria-checked="true"]::after{border-color:var(--inverse)}
+.rd-team{background:transparent;border-top:1px solid var(--line);border-radius:0;padding:14px 0}
+.rd-team:last-child{border-bottom:1px solid var(--line)}
+.rd-team b{color:var(--brass)}
+.rd-team span{font:400 19px/1.3 var(--font-serif)}
+.rd-teams{gap:0}
+.rd-vs{display:none}
+/* segmented control */
+.rd-seg{display:flex;padding:4px;border:var(--border);border-radius:var(--radius-pill);gap:4px}
+.rd-seg button{flex:1;min-height:44px;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--muted);font:var(--text-button);font-size:14px;text-transform:uppercase;letter-spacing:.14em;cursor:pointer;transition:background-color .2s,color .2s}
+.rd-seg button[aria-checked="true"]{background:var(--inverse);color:var(--on-inverse)}
+.rd-seg-note{font:italic 400 15px/1.45 var(--font-serif);color:var(--muted);margin:10px 4px 0}
+.rd-chip{border:1px solid var(--line-strong);background:transparent;color:var(--ink);min-height:44px}
+.rd-chip[aria-checked="true"]{background:var(--inverse);border-color:var(--inverse);color:var(--on-inverse)}
+.rd-field input{background:var(--surface);border:var(--border);border-radius:var(--radius-md);font:400 18px/1.2 var(--font-serif)}
+.rd-field input:focus,.rd-field input:focus-visible{border-color:var(--accent-text);box-shadow:none}
+.rd-sugg{background:var(--surface);border:var(--border);border-radius:var(--radius-md);padding:0;gap:0;box-shadow:0 18px 34px -20px rgba(0,0,0,.6)}
+.rd-sugg button{border-radius:0;border-bottom:1px solid var(--line);min-height:60px;padding:10px 16px}
+.rd-sugg button:last-child{border-bottom:0}
+.rd-sugg b{font:400 18px/1.25 var(--font-serif)}
+.rd-sugg span{font:var(--text-label);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--brass)}
+.rd-sugg mark{background:none;color:var(--accent-text);text-decoration:underline;text-underline-offset:3px}
+.rd-course{background:var(--surface);border:var(--border);border-radius:var(--radius-lg);padding:18px 18px}
+.rd-course b{font:400 22px/1.2 var(--font-serif)}
+.rd-course span{font:var(--text-label);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--brass)}
+.rd-par{background:var(--surface);border:var(--border);border-radius:var(--radius-lg)}
+.rd-par summary{border-radius:var(--radius-lg)}
+.rd-par-btn{background:transparent;border:1px solid var(--line-strong);border-radius:var(--radius-md)}
+.rd-par-btn[data-par="3"]{background:transparent;border-color:var(--line)}
+.rd-par-btn[data-par="5"]{background:var(--brass-tint);border-color:var(--brass-tint);color:var(--on-brass-tint)}
+.rd-par-btn[data-par="5"] small{color:var(--on-brass-tint)}
+/* scorecard: stat block standings, hairline table */
+.rd-stand{gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;margin-bottom:22px}
+.rd-st{background:transparent;border:0;border-radius:0;padding:2px 12px;border-left:1px solid var(--line)}
+.rd-st:first-child{border-left:0;padding-left:0}
+.rd-st.lead{background:transparent;border-color:var(--line)}
+.rd-st .tp{font:var(--text-number-xl);font-size:40px;order:-1}
+.rd-st{display:flex;flex-direction:column}
+.rd-st .nm{order:1;font:var(--text-label);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-top:6px}
+.rd-st .th{order:2;font:italic 400 13px/1.4 var(--font-serif);text-transform:none;letter-spacing:0;color:var(--muted)}
+.rd-st.lead .tp{color:var(--accent-text)}
+.rd-card thead th{background:var(--bg);color:var(--muted);border-bottom:1px solid var(--line)}
+.rd-card thead tr:first-child th:first-child,.rd-card thead tr:first-child th:last-child{border-radius:0}
+.rd-card thead tr.teams th{color:var(--brass)}
+.rd-card thead th.nm{color:var(--ink)}
+.rd-card td,.rd-card tbody th{border-bottom:1px solid var(--line)}
+.rd-card tbody tr.next{background:color-mix(in srgb,var(--brass-tint) 55%,transparent)}
+.rd-card tbody tr.next th{box-shadow:inset 3px 0 0 var(--accent)}
+.rd-card tr.sub th,.rd-card tr.sub td{background:transparent;border-bottom:1px solid var(--line-strong)}
+.rd-card tr.sub th{color:var(--brass)}
+.rd-card tr.sub.total th:first-child,.rd-card tr.sub.total td:last-child{border-radius:0}
+.rd-card tr.sub.total th,.rd-card tr.sub.total td{border-bottom:0}
+@media (hover:hover) and (pointer:fine){.rd-card tbody tr.rd-row:hover{background:var(--surface)}}
+/* hole: big serif number, meta, small round arrows */
+.rd-holeline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;margin-top:6px}
+.rd-holeno{font:400 clamp(84px,24vw,104px)/.85 var(--font-serif);letter-spacing:-.03em;color:var(--accent-text);margin:0;min-width:.6em}
+.rd-holemeta{min-width:0}
+.rd-holemeta .rd-kicker{margin:0 0 4px;white-space:normal;line-height:1.4}
+.rd-holename{margin:0;font:400 22px/1.2 var(--font-serif);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rd-holenav{display:flex;gap:8px;align-self:center}
+.rd-nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line-strong);background:transparent}
+.rd-nav svg{width:18px;height:18px}
+.rd-slot{background:var(--surface);border:var(--border);border-radius:var(--radius-lg)}
+.rd-slot .nm{font:400 17px/1.2 var(--font-serif)}
+.rd-slot .sb{font:var(--text-label);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--brass)}
+.rd-slot[aria-checked="true"]{background:var(--inverse);border-color:var(--inverse);box-shadow:none;color:var(--on-inverse)}
+.rd-slot[aria-checked="true"] .sb{color:color-mix(in srgb,var(--on-inverse) 72%,var(--inverse))}
+.rd-slot[aria-checked="true"] .rd-mk{color:var(--on-inverse)}
+.rd-slot[aria-checked="true"] .rd-mk.empty{color:color-mix(in srgb,var(--on-inverse) 60%,var(--inverse))}
+.rd-slot[aria-checked="true"] .rd-mk.birdie,.rd-slot[aria-checked="true"] .rd-mk.eagle{border-color:var(--on-inverse);box-shadow:none}
+.rd-slot[aria-checked="true"] .rd-mk.bogey{border-color:var(--on-inverse)}
+.rd-slot[aria-checked="true"]::after{background:var(--bg);border-color:var(--inverse)}
+.rd-note{background:transparent;border-top:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:0;padding:12px 0;font:italic 400 15px/1.45 var(--font-serif);color:var(--muted)}
+.rd-note b{font-style:normal;color:var(--ink)}
+.rd-key{background:transparent;border:1px solid var(--line-strong);border-bottom-width:1px;border-radius:var(--radius-pill);min-height:66px}
+.rd-key:active{transform:scale(.96)}
+.rd-key b{font:500 34px/1 var(--font-sans)}
+.rd-key.is-par{border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
+.rd-key.is-par small{color:var(--brass)}
+.rd-key[aria-pressed="true"]{background:var(--inverse);border-color:var(--inverse);box-shadow:none;color:var(--on-inverse)}
+.rd-key[aria-pressed="true"] small{color:color-mix(in srgb,var(--on-inverse) 72%,var(--inverse))}
+.rd-key.clear{border-style:dashed}
+/* results: winner card, list rows */
+.rd-win{background:var(--surface);color:var(--ink);border:var(--border);text-align:left;padding:22px 20px}
+.rd-win .k{color:var(--brass)}
+.rd-win .w{color:var(--ink);margin:10px 0 6px}
+.rd-win .s{font:italic 400 17px/1.4 var(--font-serif);color:var(--muted)}
+.rd-rank{gap:0;border-top:1px solid var(--line)}
+.rd-rank li{border:0;border-bottom:1px solid var(--line);border-radius:0;padding:14px 0;min-height:72px}
+.rd-rank .who b{font:400 20px/1.25 var(--font-serif)}
+.rd-rank .who span{font:var(--text-label);font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--brass)}
+.rd-rank .tot b{font:var(--text-number);font-size:34px}
+.rd-legend{color:var(--muted)}
+.rd-flag .rd-link{color:var(--ink)}
+.rd-flag-form input{background:var(--surface);border:var(--border);border-radius:var(--radius-md)}
+@media (max-width:360px){.rd-holeno{font-size:76px}.rd-holename{font-size:19px}}
 </style>
 </head>
 <body>
@@ -998,11 +1234,13 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
 <div class="topbar" id="topbar">
   <div class="topbar-inner">
     <a href="#top" aria-label="Pairway, back to top"><!-- LOGO: to swap in new artwork, replace this <svg> with <img class="logo" src="your-logo.svg" alt="Pairway"> --><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 422 150" role="img" aria-labelledby="pwt-t-nav"><title id="pwt-t-nav">Pairway: fair pairs, every tee</title><g transform="translate(8.0 96)"><path d="M8.064 -7.952 17.36 -66.752Q16.464 -67.872 14.392 -68.824Q12.32 -69.776 9.968 -70.112L10.64 -74.70400000000001H42.784Q68.992 -74.70400000000001 68.992 -57.120000000000005Q68.992 -48.048 63.392 -42.224000000000004Q57.792 -36.4 48.888000000000005 -33.712Q39.984 -31.024 29.792 -31.024H28.112000000000002L24.528000000000002 -7.952Q25.536 -6.944 27.944000000000003 -6.216Q30.352 -5.488 34.272 -4.5920000000000005L33.712 0.0H-0.56L0.0 -4.5920000000000005Q2.688 -5.04 4.424 -5.768000000000001Q6.16 -6.496 8.064 -7.952ZM52.416000000000004 -56.784Q52.416000000000004 -61.936 49.44800000000001 -64.96Q46.480000000000004 -67.984 40.208 -67.984Q36.176 -67.984 34.944 -67.088Q33.712 -66.19200000000001 33.264 -63.28L29.344 -38.416000000000004H31.472Q38.752 -38.416000000000004 43.456 -41.216Q48.160000000000004 -44.016 50.288000000000004 -48.216Q52.416000000000004 -52.416000000000004 52.416000000000004 -56.784Z M62.208000000000006 -19.488Q62.208000000000006 -30.128 65.792 -38.192Q69.376 -46.256 76.208 -50.68Q83.04 -55.104 92.672 -55.104Q97.936 -55.104 104.32000000000001 -52.864000000000004Q108.016 -54.992000000000004 113.72800000000001 -54.992000000000004Q115.072 -54.992000000000004 117.31200000000001 -54.768L116.864 -51.744Q115.072 -41.44 112.72 -26.543999999999997Q110.368 -11.648 110.368 -9.968Q110.368 -7.728 112.72 -7.728Q113.84 -7.728 115.296 -8.176Q116.75200000000001 -8.624 117.98400000000001 -9.408L119.44 -5.152Q115.744 -2.8000000000000003 111.88 -1.064Q108.016 0.672 103.536 0.672Q99.168 0.672 96.87200000000001 -1.288Q94.57600000000001 -3.248 94.57600000000001 -6.272Q89.31200000000001 1.232 80.016 1.232Q75.2 1.232 71.168 -1.12Q67.13600000000001 -3.472 64.67200000000001 -8.120000000000001Q62.208000000000006 -12.768 62.208000000000006 -19.488ZM97.04 -27.888 100.624 -48.608000000000004Q97.936 -49.616 95.248 -49.616Q90.432 -49.616 86.624 -46.2Q82.816 -42.784 80.57600000000001 -35.896Q78.33600000000001 -29.008 78.33600000000001 -19.152Q78.33600000000001 -12.544 80.18400000000001 -9.072000000000001Q82.03200000000001 -5.6000000000000005 85.05600000000001 -5.6000000000000005Q93.12 -5.6000000000000005 97.04 -27.888Z M127.616 -9.072000000000001Q127.616 -12.32 130.416 -29.12Q132.32 -40.768 132.32 -42.112Q132.32 -46.928000000000004 127.84 -46.928000000000004Q127.28 -46.928000000000004 125.488 -46.704L125.152 -51.072Q129.184 -52.752 135.624 -53.872Q142.064 -54.992000000000004 146.992 -55.104L150.016 -53.536L148.56 -44.128Q143.408 -12.32 143.408 -10.304Q143.408 -7.6160000000000005 145.984 -7.6160000000000005Q147.888 -7.6160000000000005 151.136 -9.408L152.59199999999998 -5.376Q150.352 -3.136 145.536 -1.232Q140.72 0.672 136.912 0.672Q131.87199999999999 0.672 129.744 -1.792Q127.616 -4.256 127.616 -9.072000000000001ZM136.016 -69.21600000000001Q136.016 -73.36 138.536 -75.88Q141.05599999999998 -78.4 145.312 -78.4Q148.672 -78.4 150.632 -76.664Q152.59199999999998 -74.928 152.59199999999998 -71.904Q152.59199999999998 -67.76 150.072 -65.24000000000001Q147.552 -62.72 143.296 -62.72Q140.048 -62.72 138.03199999999998 -64.4Q136.016 -66.08 136.016 -69.21600000000001Z M161.10399999999998 -14.336Q161.552 -17.36 163.456 -29.064Q165.35999999999999 -40.768 165.35999999999999 -42.672000000000004Q165.35999999999999 -44.800000000000004 164.18399999999997 -45.864000000000004Q163.00799999999998 -46.928000000000004 160.88 -46.928000000000004Q160.32 -46.928000000000004 158.528 -46.704L158.19199999999998 -51.072Q167.82399999999998 -55.104 180.03199999999998 -55.104L183.16799999999998 -53.312L180.928 -39.424Q184.28799999999998 -46.368 188.88 -50.568Q193.47199999999998 -54.768 199.408 -54.768Q203.552 -54.768 206.016 -52.64Q208.48 -50.512 208.48 -46.592Q208.48 -42.112 205.84799999999998 -39.088Q203.21599999999998 -36.064 200.19199999999998 -36.064Q198.512 -36.064 196.88799999999998 -36.903999999999996Q195.26399999999998 -37.744 194.368 -38.864000000000004Q194.81599999999997 -39.312 195.152 -40.208Q195.488 -41.104 195.488 -41.888Q195.488 -43.232 194.704 -44.072Q193.92 -44.912 192.464 -44.912Q190.112 -44.912 186.976 -41.104Q183.83999999999997 -37.296 181.26399999999998 -31.64Q178.688 -25.984 177.904 -20.832L174.54399999999998 0.0H158.75199999999998Z M206.128 -47.824 205.456 -51.408Q207.92 -52.976 212.28799999999998 -53.872Q216.65599999999998 -54.768 221.58399999999997 -54.768Q224.384 -54.768 225.72799999999998 -54.656L231.10399999999998 -14.112Q237.26399999999998 -24.192 240.00799999999998 -29.568Q242.75199999999998 -34.944 243.64799999999997 -38.864000000000004Q244.54399999999998 -42.784 244.54399999999998 -48.496V-53.424Q249.248 -54.208 256.752 -54.208L262.24 -13.44Q270.864 -26.88 274.28 -33.992Q277.69599999999997 -41.104 277.69599999999997 -44.800000000000004Q277.69599999999997 -48.72 272.544 -48.944L272.096 -53.088Q278.032 -54.88 284.75199999999995 -54.88Q287.77599999999995 -54.88 289.23199999999997 -54.656L291.13599999999997 -51.744Q291.13599999999997 -49.28 288.056 -42.336Q284.976 -35.392 280.94399999999996 -29.344L260.67199999999997 0.784Q253.72799999999998 0.784 250.14399999999998 0.0L246.67199999999997 -26.096L229.53599999999997 0.784Q228.528 0.896 226.39999999999998 0.896Q221.92 0.896 219.00799999999998 0.0L213.51999999999998 -40.992Q212.624 -47.936 206.128 -47.824Z M291.15999999999997 -19.488Q291.15999999999997 -30.128 294.74399999999997 -38.192Q298.328 -46.256 305.15999999999997 -50.68Q311.99199999999996 -55.104 321.62399999999997 -55.104Q326.888 -55.104 333.272 -52.864000000000004Q336.96799999999996 -54.992000000000004 342.68 -54.992000000000004Q344.024 -54.992000000000004 346.264 -54.768L345.816 -51.744Q344.024 -41.44 341.672 -26.543999999999997Q339.32 -11.648 339.32 -9.968Q339.32 -7.728 341.67199999999997 -7.728Q342.792 -7.728 344.248 -8.176Q345.704 -8.624 346.936 -9.408L348.392 -5.152Q344.69599999999997 -2.8000000000000003 340.832 -1.064Q336.96799999999996 0.672 332.488 0.672Q328.12 0.672 325.824 -1.288Q323.528 -3.248 323.528 -6.272Q318.264 1.232 308.96799999999996 1.232Q304.152 1.232 300.12 -1.12Q296.08799999999997 -3.472 293.62399999999997 -8.120000000000001Q291.15999999999997 -12.768 291.15999999999997 -19.488ZM325.99199999999996 -27.888 329.57599999999996 -48.608000000000004Q326.888 -49.616 324.2 -49.616Q319.384 -49.616 315.576 -46.2Q311.768 -42.784 309.528 -35.896Q307.288 -29.008 307.288 -19.152Q307.288 -12.544 309.13599999999997 -9.072000000000001Q310.984 -5.6000000000000005 314.008 -5.6000000000000005Q322.072 -5.6000000000000005 325.99199999999996 -27.888Z M360.264 16.8Q360.264 13.552 362.336 9.576Q364.408 5.6000000000000005 367.992 0.56Q364.856 0.336 363.736 0.0L358.248 -40.992Q357.8 -44.576 356.12 -46.2Q354.44 -47.824 351.416 -47.824L350.74399999999997 -51.408Q353.20799999999997 -52.976 357.856 -53.872Q362.504 -54.768 367.768 -54.768Q370.568 -54.768 372.024 -54.656L377.512 -12.88Q383.448 -22.288 387.08799999999997 -29.512Q390.728 -36.736000000000004 391.96 -39.984Q392.856 -42.672000000000004 392.856 -44.800000000000004Q392.856 -47.264 391.4 -48.048Q389.944 -48.832 387.816 -48.944L387.368 -53.088Q393.304 -54.88 400.024 -54.88Q401.816 -54.88 404.504 -54.656L406.408 -51.744Q403.944 -41.664 397.56 -31.36L372.69599999999997 7.28Q370.904 10.08 370.904 11.984Q370.904 13.328 371.856 14.168Q372.808 15.008000000000001 374.488 15.008000000000001Q376.616 15.008000000000001 378.296 13.664Q378.52 15.232000000000001 378.52 15.904Q378.52 19.488 375.77599999999995 22.064Q373.032 24.64 368.664 24.64Q365.08 24.64 362.672 22.567999999999998Q360.264 20.496 360.264 16.8Z" fill="currentColor"/></g><g transform="translate(38.1 138)"><path d="M13.037109375 -19.453125V-16.3916015625H5.4638671875V-10.8837890625H11.806640625V-7.822265625H5.4638671875V0.0H1.5966796875V-19.453125Z M35.13359375 0.0H32.174609375Q31.6619140625 0.0 31.354296875 -0.24169921875Q31.0466796875 -0.4833984375 30.9001953125 -0.849609375L29.6697265625 -4.6728515625H22.506640625L21.2908203125 -0.8642578125Q21.1736328125 -0.5419921875 20.84404296875 -0.27099609375Q20.514453125 0.0 20.0310546875 0.0H17.028125L24.11796875 -19.453125H28.04375ZM23.3708984375 -7.3681640625H28.7908203125L26.81328125 -13.5205078125Q26.6375 -13.974609375 26.4470703125 -14.58251953125Q26.256640625 -15.1904296875 26.0662109375 -15.908203125Q25.8904296875 -15.1904296875 25.7 -14.5751953125Q25.5095703125 -13.9599609375 25.3484375 -13.505859375Z M44.280859375 0.0H40.413671875V-19.453125H44.280859375Z M55.141992187499994 -7.4853515625V0.0H51.274804687499994V-19.453125H57.134179687499994Q59.082421874999994 -19.453125 60.474023437499994 -19.03564453125Q61.865624999999994 -18.6181640625 62.751855468749994 -17.87109375Q63.638085937499994 -17.1240234375 64.0482421875 -16.083984375Q64.4583984375 -15.0439453125 64.4583984375 -13.798828125Q64.4583984375 -12.8466796875 64.1947265625 -11.98974609375Q63.931054687499994 -11.1328125 63.425683593749994 -10.42236328125Q62.920312499999994 -9.7119140625 62.187890624999994 -9.16259765625Q61.455468749999994 -8.61328125 60.503320312499994 -8.2763671875Q60.869531249999994 -8.0712890625 61.191796874999994 -7.78564453125Q61.514062499999994 -7.5 61.792382812499994 -7.08984375L66.14296875 0.0H62.671289062499994Q61.748437499999994 0.0 61.250390624999994 -0.7763671875L57.705468749999994 -6.8408203125Q57.485742187499994 -7.1923828125 57.214746093749994 -7.3388671875Q56.943749999999994 -7.4853515625 56.445703124999994 -7.4853515625ZM55.141992187499994 -10.224609375H57.104882812499994Q58.042382812499994 -10.224609375 58.723535156249994 -10.4736328125Q59.404687499999994 -10.72265625 59.844140624999994 -11.162109375Q60.283593749999994 -11.6015625 60.495996093749994 -12.20947265625Q60.708398437499994 -12.8173828125 60.708398437499994 -13.53515625Q60.708398437499994 -14.9560546875 59.829492187499994 -15.72509765625Q58.950585937499994 -16.494140625 57.134179687499994 -16.494140625H55.141992187499994Z  M85.1552734375 -6.7529296875V0.0H81.302734375V-19.453125H87.5576171875Q89.447265625 -19.453125 90.8095703125 -18.984375Q92.171875 -18.515625 93.0654296875 -17.68798828125Q93.958984375 -16.8603515625 94.3837890625 -15.7177734375Q94.80859375 -14.5751953125 94.80859375 -13.212890625Q94.80859375 -11.77734375 94.36181640625 -10.5908203125Q93.9150390625 -9.404296875 93.01416015625 -8.5546875Q92.11328125 -7.705078125 90.7509765625 -7.22900390625Q89.388671875 -6.7529296875 87.5576171875 -6.7529296875ZM85.1552734375 -9.7412109375H87.5576171875Q89.3154296875 -9.7412109375 90.1357421875 -10.67138671875Q90.9560546875 -11.6015625 90.9560546875 -13.212890625Q90.9560546875 -14.7216796875 90.12109375 -15.60791015625Q89.2861328125 -16.494140625 87.5576171875 -16.494140625H85.1552734375Z M116.9490234375 0.0H113.9900390625Q113.47734375 0.0 113.1697265625 -0.24169921875Q112.862109375 -0.4833984375 112.715625 -0.849609375L111.48515625 -4.6728515625H104.3220703125L103.10625 -0.8642578125Q102.9890625 -0.5419921875 102.65947265625 -0.27099609375Q102.3298828125 0.0 101.846484375 0.0H98.8435546875L105.9333984375 -19.453125H109.8591796875ZM105.186328125 -7.3681640625H110.60625L108.6287109375 -13.5205078125Q108.4529296875 -13.974609375 108.2625 -14.58251953125Q108.0720703125 -15.1904296875 107.881640625 -15.908203125Q107.705859375 -15.1904296875 107.5154296875 -14.5751953125Q107.325 -13.9599609375 107.1638671875 -13.505859375Z M126.0962890625 0.0H122.2291015625V-19.453125H126.0962890625Z M136.957421875 -7.4853515625V0.0H133.090234375V-19.453125H138.949609375Q140.8978515625 -19.453125 142.289453125 -19.03564453125Q143.6810546875 -18.6181640625 144.56728515625 -17.87109375Q145.453515625 -17.1240234375 145.863671875 -16.083984375Q146.273828125 -15.0439453125 146.273828125 -13.798828125Q146.273828125 -12.8466796875 146.01015625 -11.98974609375Q145.746484375 -11.1328125 145.24111328125 -10.42236328125Q144.7357421875 -9.7119140625 144.0033203125 -9.16259765625Q143.2708984375 -8.61328125 142.31875 -8.2763671875Q142.6849609375 -8.0712890625 143.0072265625 -7.78564453125Q143.3294921875 -7.5 143.6078125 -7.08984375L147.9583984375 0.0H144.48671875Q143.5638671875 0.0 143.0658203125 -0.7763671875L139.5208984375 -6.8408203125Q139.301171875 -7.1923828125 139.03017578125 -7.3388671875Q138.7591796875 -7.4853515625 138.2611328125 -7.4853515625ZM136.957421875 -10.224609375H138.9203125Q139.8578125 -10.224609375 140.53896484375 -10.4736328125Q141.2201171875 -10.72265625 141.6595703125 -11.162109375Q142.0990234375 -11.6015625 142.31142578125 -12.20947265625Q142.523828125 -12.8173828125 142.523828125 -13.53515625Q142.523828125 -14.9560546875 141.644921875 -15.72509765625Q140.766015625 -16.494140625 138.949609375 -16.494140625H136.957421875Z M163.47773437499998 -15.791015625Q163.33124999999998 -15.498046875 163.13349609374998 -15.37353515625Q162.93574218749998 -15.2490234375 162.64277343749998 -15.2490234375Q162.36445312499998 -15.2490234375 162.04218749999998 -15.4541015625Q161.71992187499998 -15.6591796875 161.28779296874998 -15.90087890625Q160.85566406249998 -16.142578125 160.28437499999998 -16.34765625Q159.71308593749998 -16.552734375 158.96601562499998 -16.552734375Q157.64765624999998 -16.552734375 156.98115234374998 -15.908203125Q156.31464843749998 -15.263671875 156.31464843749998 -14.2236328125Q156.31464843749998 -13.564453125 156.67353515624998 -13.13232421875Q157.03242187499998 -12.7001953125 157.62568359374998 -12.38525390625Q158.21894531249998 -12.0703125 158.97333984374998 -11.8212890625Q159.72773437499998 -11.572265625 160.51874999999998 -11.28662109375Q161.30976562499998 -11.0009765625 162.06416015624998 -10.61279296875Q162.81855468749998 -10.224609375 163.41181640624998 -9.638671875Q164.00507812499998 -9.052734375 164.36396484374998 -8.203125Q164.72285156249998 -7.353515625 164.72285156249998 -6.1376953125Q164.72285156249998 -4.8193359375 164.29072265624998 -3.662109375Q163.85859374999998 -2.5048828125 163.02363281249998 -1.64794921875Q162.18867187499998 -0.791015625 160.98017578124998 -0.29296875Q159.77167968749998 0.205078125 158.21894531249998 0.205078125Q157.34003906249998 0.205078125 156.46845703124998 0.02197265625Q155.59687499999998 -0.1611328125 154.79121093749998 -0.498046875Q153.98554687499998 -0.8349609375 153.26777343749998 -1.3037109375Q152.54999999999998 -1.7724609375 152.00800781249998 -2.3583984375L153.15058593749998 -4.189453125Q153.28242187499998 -4.4091796875 153.50947265624998 -4.541015625Q153.73652343749998 -4.6728515625 154.00019531249998 -4.6728515625Q154.35175781249998 -4.6728515625 154.72529296874998 -4.40185546875Q155.09882812499998 -4.130859375 155.59687499999998 -3.80126953125Q156.09492187499998 -3.4716796875 156.75410156249998 -3.20068359375Q157.41328124999998 -2.9296875 158.32148437499998 -2.9296875Q159.63984374999998 -2.9296875 160.37226562499998 -3.603515625Q161.10468749999998 -4.27734375 161.10468749999998 -5.595703125Q161.10468749999998 -6.3427734375 160.74580078124998 -6.8115234375Q160.38691406249998 -7.2802734375 159.80097656249998 -7.59521484375Q159.21503906249998 -7.91015625 158.46064453124998 -8.13720703125Q157.70624999999998 -8.3642578125 156.92255859374998 -8.6279296875Q156.13886718749998 -8.8916015625 155.38447265624998 -9.26513671875Q154.63007812499998 -9.638671875 154.04414062499998 -10.25390625Q153.45820312499998 -10.869140625 153.09931640624998 -11.77734375Q152.74042968749998 -12.685546875 152.74042968749998 -14.033203125Q152.74042968749998 -15.1025390625 153.15058593749998 -16.12060546875Q153.56074218749998 -17.138671875 154.35175781249998 -17.9296875Q155.14277343749998 -18.720703125 156.29267578124998 -19.19677734375Q157.44257812499998 -19.6728515625 158.92207031249998 -19.6728515625Q160.59199218749998 -19.6728515625 162.02021484374998 -19.130859375Q163.44843749999998 -18.5888671875 164.45917968749998 -17.607421875Z M170.55957031249997 -2.2412109375Q170.55957031249997 -2.6513671875 170.71337890624997 -3.017578125Q170.86718749999997 -3.3837890625 171.15283203124997 -3.6474609375Q171.43847656249997 -3.9111328125 171.82666015624997 -4.06494140625Q172.21484374999997 -4.21875 172.69824218749997 -4.21875Q173.26953124999997 -4.21875 173.68701171874997 -4.02099609375Q174.10449218749997 -3.8232421875 174.37548828124997 -3.47900390625Q174.64648437499997 -3.134765625 174.78564453124997 -2.68798828125Q174.92480468749997 -2.2412109375 174.92480468749997 -1.7431640625Q174.92480468749997 -1.0546875 174.71240234374997 -0.29296875Q174.49999999999997 0.46875 174.09716796874997 1.23779296875Q173.69433593749997 2.0068359375 173.08642578124997 2.73193359375Q172.47851562499997 3.45703125 171.68749999999997 4.0576171875L171.02832031249997 3.4716796875Q170.88183593749997 3.33984375 170.82324218749997 3.21533203125Q170.76464843749997 3.0908203125 170.76464843749997 2.9150390625Q170.76464843749997 2.7978515625 170.85253906249997 2.6513671875Q170.94042968749997 2.5048828125 171.05761718749997 2.3876953125Q171.21874999999997 2.2119140625 171.44580078124997 1.97021484375Q171.67285156249997 1.728515625 171.89990234374997 1.41357421875Q172.12695312499997 1.0986328125 172.31738281249997 0.732421875Q172.50781249999997 0.3662109375 172.61035156249997 -0.05859375Q172.15624999999997 -0.0732421875 171.77539062499997 -0.24169921875Q171.39453124999997 -0.41015625 171.12353515624997 -0.703125Q170.85253906249997 -0.99609375 170.70605468749997 -1.38427734375Q170.55957031249997 -1.7724609375 170.55957031249997 -2.2412109375Z  M203.34140624999995 -19.453125V-16.3916015625H195.34335937499995V-11.25H201.56894531249995V-8.3056640625H195.34335937499995V-3.0615234375H203.35605468749995L203.34140624999995 0.0H191.47617187499995V-19.453125Z M207.59609374999994 -19.453125H210.68691406249994Q211.18496093749994 -19.453125 211.49990234374994 -19.21875Q211.81484374999994 -18.984375 211.97597656249994 -18.603515625L215.63808593749994 -7.119140625Q215.85781249999994 -6.5185546875 216.07753906249994 -5.8154296875Q216.29726562499994 -5.1123046875 216.48769531249994 -4.3505859375Q216.64882812499994 -5.126953125 216.84658203124994 -5.83740234375Q217.04433593749994 -6.5478515625 217.27871093749994 -7.1484375L220.92617187499994 -18.603515625Q221.04335937499994 -18.9404296875 221.38027343749994 -19.19677734375Q221.71718749999994 -19.453125 222.20058593749994 -19.453125H225.30605468749994L218.18691406249994 0.0H214.71523437499994Z M242.11445312499993 -19.453125V-16.3916015625H234.11640624999993V-11.25H240.34199218749993V-8.3056640625H234.11640624999993V-3.0615234375H242.12910156249993L242.11445312499993 0.0H230.24921874999993V-19.453125Z M251.95019531249991 -7.4853515625V0.0H248.08300781249991V-19.453125H253.94238281249991Q255.89062499999991 -19.453125 257.2822265624999 -19.03564453125Q258.6738281249999 -18.6181640625 259.5600585937499 -17.87109375Q260.4462890624999 -17.1240234375 260.8564453124999 -16.083984375Q261.2666015624999 -15.0439453125 261.2666015624999 -13.798828125Q261.2666015624999 -12.8466796875 261.0029296874999 -11.98974609375Q260.7392578124999 -11.1328125 260.2338867187499 -10.42236328125Q259.7285156249999 -9.7119140625 258.9960937499999 -9.16259765625Q258.2636718749999 -8.61328125 257.3115234374999 -8.2763671875Q257.6777343749999 -8.0712890625 257.9999999999999 -7.78564453125Q258.3222656249999 -7.5 258.6005859374999 -7.08984375L262.9511718749999 0.0H259.4794921874999Q258.5566406249999 0.0 258.0585937499999 -0.7763671875L254.51367187499991 -6.8408203125Q254.29394531249991 -7.1923828125 254.02294921874991 -7.3388671875Q253.75195312499991 -7.4853515625 253.25390624999991 -7.4853515625ZM251.95019531249991 -10.224609375H253.91308593749991Q254.85058593749991 -10.224609375 255.5317382812499 -10.4736328125Q256.2128906249999 -10.72265625 256.6523437499999 -11.162109375Q257.0917968749999 -11.6015625 257.3041992187499 -12.20947265625Q257.5166015624999 -12.8173828125 257.5166015624999 -13.53515625Q257.5166015624999 -14.9560546875 256.6376953124999 -15.72509765625Q255.75878906249991 -16.494140625 253.94238281249991 -16.494140625H251.95019531249991Z M276.14140624999993 -7.5V0.0H272.33281249999993V-7.529296875L266.22441406249993 -19.453125H269.63749999999993Q270.10624999999993 -19.453125 270.39921874999993 -19.21875Q270.69218749999993 -18.984375 270.88261718749993 -18.603515625L273.28496093749993 -12.3193359375Q273.59257812499993 -11.7333984375 273.83427734374993 -11.220703125Q274.07597656249993 -10.7080078125 274.26640624999993 -10.1953125Q274.42753906249993 -10.7080078125 274.66191406249993 -11.220703125Q274.89628906249993 -11.7333984375 275.18925781249993 -12.3046875L277.57695312499993 -18.603515625Q277.73808593749993 -18.9111328125 278.04570312499993 -19.18212890625Q278.35332031249993 -19.453125 278.83671874999993 -19.453125H282.24980468749993Z  M309.8021484374999 -19.453125V-16.318359375H304.5580078124999V0.0H300.7201171874999V-16.318359375H295.4759765624999V-19.453125Z M326.8595703124999 -19.453125V-16.3916015625H318.8615234374999V-11.25H325.0871093749999V-8.3056640625H318.8615234374999V-3.0615234375H326.8742187499999L326.8595703124999 0.0H314.9943359374999V-19.453125Z M344.6933593749999 -19.453125V-16.3916015625H336.6953124999999V-11.25H342.9208984374999V-8.3056640625H336.6953124999999V-3.0615234375H344.7080078124999L344.6933593749999 0.0H332.8281249999999V-19.453125Z" fill="currentColor"/></g></svg></a>
+    <button class="theme-btn" type="button" id="themeBtn" aria-pressed="false" aria-label="Switch to light mode"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
   </div>
 </div>
 
 <header class="hero" id="top">
-  <h1 aria-label="Split the carts fairly"><span class="w"><span style="--i:0">Split</span></span> <span class="w"><span style="--i:1">the</span></span><br><span class="w"><span style="--i:2">carts</span></span><br><span class="w"><span style="--i:3">fairly.</span></span></h1>
+  <p class="hero-k" id="heroDate"></p>
+  <h1 aria-label="Split the carts fairly"><span class="w"><span style="--i:0">Split</span></span> <span class="w"><span style="--i:1">the</span></span><br><span class="w"><span style="--i:2">carts</span></span><br><span class="w"><span style="--i:3"><em>fairly.</em></span></span></h1>
   <p>Pick the game, rank your crew, and Pairway pairs everyone so your round is an even match.</p>
   <div class="cta-row"><a class="btn btn-gold" href="#game">Set up the round</a><button class="btn btn-ghost" type="button" id="heroScoreBtn">Score a round</button></div>
   <div class="course" aria-hidden="true">
@@ -1029,7 +1267,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
   <section class="section" id="game" aria-labelledby="h-game">
     <div class="sec-head">
       <div class="kicker"><span class="dot" style="background:#E07A4F"></span>Step 1 of 3</div>
-      <h2 id="h-game">The game</h2>
+      <h2 id="h-game">The <em>game</em></h2>
       <p class="lede">What are you playing today? It changes how we split the field.</p>
     </div>
     <fieldset class="games" id="games"><legend class="sr-only">Game type</legend></fieldset>
@@ -1052,7 +1290,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
   <section class="section" id="field" aria-labelledby="h-field">
     <div class="sec-head">
       <div class="kicker"><span class="dot" style="background:#FBF6EE;box-shadow:inset 0 0 0 1.5px rgba(22,34,20,.35)"></span>Step 2 of 3</div>
-      <h2 id="h-field">The field</h2>
+      <h2 id="h-field">The <em>field</em></h2>
       <p class="lede">Best at the top, worst at the bottom. Ratings sort it roughly, then drag to fine-tune.</p>
     </div>
     <label class="toggle-card" id="hcpCard" for="hcpOn" style="margin-bottom:18px">
@@ -1075,7 +1313,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
   <section class="section results" id="results" aria-labelledby="h-draw" hidden>
     <div class="sec-head">
       <div class="kicker"><span class="dot" style="background:#C9A15B"></span>Step 3 of 3</div>
-      <h2 id="h-draw" tabindex="-1">The draw</h2>
+      <h2 id="h-draw" tabindex="-1">The <em>draw</em></h2>
       <p class="lede" id="drawLede"></p>
     </div>
     <div class="balance" id="balance">
@@ -1187,7 +1425,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
         <section class="rd-step" id="rdSecScore">
           <h3 class="rd-h" id="rdScoreH"><span class="rd-n"></span>Who are you scoring?</h3>
           <p class="rd-hint">One phone keeps the card. Enter everyone&rsquo;s score, or just your own.</p>
-          <div class="rd-opts" id="rdTrack" role="radiogroup" aria-labelledby="rdScoreH"></div>
+          <div class="rd-track" id="rdTrack" role="radiogroup" aria-labelledby="rdScoreH"></div>
           <div id="rdMeWrap" hidden>
             <p class="rd-sub-h" id="rdMeH">Which one&rsquo;s you?</p>
             <div class="rd-chips" id="rdMe" role="radiogroup" aria-labelledby="rdMeH"></div>
@@ -1221,11 +1459,11 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
 
     <section class="rd-view rd-hole" id="rdHole" aria-labelledby="rdHoleT" hidden>
       <header class="rd-head">
-        <div class="rd-bar"><button class="rd-link" type="button" data-rd="card"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4 6 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Scorecard</button><span class="rd-prog" id="rdHoleProg"></span></div>
-        <div class="rd-holenav">
-          <button class="rd-nav" type="button" id="rdPrev" aria-label="Previous hole"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4 6 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="rd-holemid"><h2 class="rd-title" id="rdHoleT" tabindex="-1">Hole 1</h2><p class="rd-par-l" id="rdHolePar">Par 4</p></div>
-          <button class="rd-nav" type="button" id="rdNext" aria-label="Next hole"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="rd-bar"><button class="rd-link" type="button" data-rd="card"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4 6 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Scorecard</button><span class="rd-badge" id="rdHoleProg"></span></div>
+        <div class="rd-holeline">
+          <h2 class="rd-title rd-holeno" id="rdHoleT" tabindex="-1">1</h2>
+          <div class="rd-holemeta"><p class="rd-kicker" id="rdHolePar">Par 4</p><p class="rd-holename" id="rdHoleName"></p></div>
+          <div class="rd-holenav"><button class="rd-nav" type="button" id="rdPrev" aria-label="Previous hole"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4 6 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="rd-nav" type="button" id="rdNext" aria-label="Next hole"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
         </div>
       </header>
       <div class="rd-body">
@@ -2260,7 +2498,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
     $('#rdSecPlayers').hidden = !!fromDraw;
     $('#rdSecGame').hidden = !!fromDraw;
     $('#rdStart').textContent = RD.started ? 'Save and go to scorecard' : 'Start round';
-    let n = 0; $$('.rd-step', $('#rdSetup')).forEach(s => { if (!s.hidden) $('.rd-n', s).textContent = ++n; });
+    let n = 0; $$('.rd-step', $('#rdSetup')).forEach(s => { if (!s.hidden) $('.rd-n', s).textContent = 'Step ' + String(++n).padStart(2, '0'); });
     if (multi) rdRenderGroups();
     if (fromDraw) rdRenderDrawTeams(); else { rdRenderPlayers(); rdRenderGames(); }
     rdRenderCourse(); rdRenderPar(); rdRenderTrack();
@@ -2354,7 +2592,7 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
       const tees = c ? c.tees : [];
       const meta = [c && c.region, `Par ${rdParTotal(D.par)}`, tees.length > 1 ? `${tees[D.teeIdx].tee_name} tees` : null].filter(Boolean).join(' · ');
       box.innerHTML = `<div class="rd-course"><div><b>${esc(D.course)}</b><span>${esc(meta)}</span></div><button type="button" class="rd-link u" id="rdCourseChange">Change</button></div>` + rdFlagHTML(c) +
-        (tees.length > 1 ? `<div class="rd-tees"><p class="rd-sub-h" id="rdTeeH" style="margin-top:14px">Tees</p><div class="rd-chips" role="radiogroup" aria-labelledby="rdTeeH">${tees.map((t, i) => `<button type="button" class="rd-chip" role="radio" aria-checked="${i === D.teeIdx}" data-tee="${i}">${esc(t.tee_name || 'Tee ' + (i + 1))}</button>`).join('')}</div></div>` : '');
+        (tees.length > 1 ? `<div class="rd-tees"><p class="rd-sub-h" id="rdTeeH" style="margin-top:14px">Tees</p><div class="rd-seg" role="radiogroup" aria-labelledby="rdTeeH">${tees.map((t, i) => `<button type="button" role="radio" aria-checked="${i === D.teeIdx}" data-tee="${i}">${esc(t.tee_name || 'Tee ' + (i + 1))}</button>`).join('')}</div></div>` : '');
       return;
     }
     box.innerHTML = `<div class="rd-field">${RD_SEARCH}<input type="search" id="rdQ" placeholder="Search courses, e.g. Moore Park" autocomplete="off" autocapitalize="words" enterkeyhint="search" aria-label="Search courses" aria-controls="rdSugg" aria-describedby="rdQMsg"></div><div class="rd-sugg" id="rdSugg" hidden></div><p class="rd-msg" id="rdQMsg" aria-live="polite">${LOCAL_COURSES.length} NSW courses built in.</p>`;
@@ -2448,8 +2686,8 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
     const units = rdTeamUnits(D), solo = D.track === 'solo';
     const sharedOnly = units.length && units.every(u => u.entry === 'shared');
     const scope = D.origin === 'draw' && D.draw ? (D.draw.groups.length > 1 ? `Group ${D.groupIdx + 1}` : 'your group') : 'the group';
-    $('#rdTrack').innerHTML = rdOpt('data-track', 'group', !solo, 'Everyone', `You enter every score for ${scope}.`) +
-      rdOpt('data-track', 'solo', solo, sharedOnly ? 'Just my team' : 'Just me', sharedOnly ? 'Only your team’s card.' : 'Only your own card.');
+    const opts = [['group', 'Everyone', `You enter every score for ${scope}.`], ['solo', sharedOnly ? 'Just my team' : 'Just me', sharedOnly ? 'Only your team’s card.' : 'Only your own card.']];
+    $('#rdTrack').innerHTML = `<div class="rd-seg">${opts.map(([k, l]) => `<button type="button" role="radio" aria-checked="${(k === 'solo') === solo}" data-track="${k}">${esc(l)}</button>`).join('')}</div><p class="rd-seg-note">${esc(opts[solo ? 1 : 0][2])}</p>`;
     const people = rdPeople(D);
     $('#rdMeWrap').hidden = !solo || people.length < 2;
     if (solo && people.length) {
@@ -2540,9 +2778,12 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
   function rdRenderHole() {
     const h = RD.hole, par = RD.par[h], slots = RD.slots;
     if (!slots.some(s => s.key === RD.sel)) RD.sel = (slots.find(s => rdScore(s.key, h) == null) || slots[0]).key;
-    $('#rdHoleT').textContent = `Hole ${h + 1}`;
-    $('#rdHolePar').innerHTML = `Par <b>${par}</b>`;
-    $('#rdHoleProg').textContent = `${RD.course ? RD.course + ' · ' : ''}${h + 1} of 18`;
+    $('#rdHoleT').innerHTML = `<span class="sr-only">Hole </span>${h + 1}`;
+    $('#rdHolePar').textContent = `Par ${par} \u00b7 ${h + 1} of 18`;
+    $('#rdHoleName').textContent = RD.course || 'Your round';
+    let holesIn = 0; for (let k = 0; k < 18; k++) if (rdHoleDone(k)) holesIn++;
+    const one = RD.units.length === 1 ? rdUnitSum(RD.units[0]) : null;
+    $('#rdHoleProg').textContent = one && one.thru ? `Thru ${one.thru} \u00b7 ${rdToPar(one.toPar)}` : holesIn ? `Thru ${holesIn}` : '';
     $('#rdPrev').disabled = h === 0; $('#rdNext').disabled = h === 17;
     $('#rdSlotsH').hidden = slots.length < 2;
     $('#rdSlots').style.setProperty('--n', Math.min(slots.length, 4));
@@ -2625,6 +2866,23 @@ h2[tabindex="-1"]:focus,h2[tabindex="-1"]:focus-visible,.rd .rd-title:focus-visi
   });
 
   rdLoad(); rdSyncEntry();
+
+  // ---------- Theme: dark by default, light when the player switches ----------
+  const THEME_KEY = 'pairway:theme';
+  function applyTheme(t) {
+    if (t === 'light') document.documentElement.dataset.theme = 'light'; else delete document.documentElement.dataset.theme;
+    const b = $('#themeBtn'); b.setAttribute('aria-pressed', String(t === 'light')); b.setAttribute('aria-label', t === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+    $('#themeColor').content = t === 'light' ? '#FBF6EE' : '#162214';
+  }
+  applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+  $('#themeBtn').addEventListener('click', () => {
+    const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    applyTheme(t); try { localStorage.setItem(THEME_KEY, t); } catch (e) {} buzz(8);
+  });
+  (function heroDate() {
+    const d = new Date();
+    $('#heroDate').textContent = `${d.toLocaleDateString('en-AU', { weekday: 'long' })} \u00b7 ${d.getDate()} ${d.toLocaleDateString('en-AU', { month: 'short' })}`;
+  })();
 
   // ---------- Boot ----------
   load();
