@@ -2709,12 +2709,17 @@ button.pw-chip{cursor:pointer;min-height:40px;-webkit-tap-highlight-color:transp
     if (view === 'card' && rdCameFrom === 'hole') rdFlashRow();
   }
   let rdCameFrom = null;
+  // Remember that the round screen is open. Phones often unload a backgrounded tab (screen lock),
+  // and the reload would otherwise land on the homepage mid-game.
+  const RD_OPEN = 'pairway:round:open';
   function rdOpen(view) {
     rdReturn = document.activeElement;
+    try { localStorage.setItem(RD_OPEN, '1'); } catch (e) {}
     rdEl.hidden = false; document.documentElement.classList.add('rd-lock');
     rdShow(view);
   }
   function rdClose() {
+    try { localStorage.removeItem(RD_OPEN); } catch (e) {}
     rdEl.hidden = true; document.documentElement.classList.remove('rd-lock');
     rdSyncEntry();
     if (rdReturn && rdReturn.isConnected) rdReturn.focus({ preventScroll: true });
@@ -3396,7 +3401,16 @@ button.pw-chip{cursor:pointer;min-height:40px;-webkit-tap-highlight-color:transp
   renderRoster(); updateMeta(); syncDrinks(); syncHcp();
   const loader = $('#loader');
   const start = () => { document.body.classList.add('ready'); loader.classList.add('out'); setTimeout(() => loader.remove(), 800); layoutRail(); };
-  if (reduced) start();
+  // Came back to a round that was open (e.g. the phone locked and the tab reloaded): straight back to it.
+  let resumed = false;
+  try {
+    if (localStorage.getItem(RD_OPEN) && !/[#&]j=/.test(location.hash) && RD.started && RD.slots.length) {
+      resumed = true;
+      rdOpen(['hole', 'card', 'tally'].includes(RD.view) ? RD.view : 'card');
+    }
+  } catch (e) { console.error('Pairway resume', e); }
+  if (resumed) { loader.remove(); document.body.classList.add('ready'); layoutRail(); }
+  else if (reduced) start();
   else {
     const ball = $('#lball'), wrap = $('#lballw');
     // Long, decelerating roll: quick off the putter, then dying speed so it just creeps to the lip.
